@@ -1026,6 +1026,24 @@ function assignPositions(available, battingOrder, benchCount, gameNum) {
     catcherInnings[c].push(i);
   }
 
+  // Build pre-pitch bench requirement: pitcher for inning N (N>1) must bench in inning N-1
+  const mustBenchForPitching = {}; // inning -> [players who must bench because they pitch next inning]
+  for (let i = 1; i <= INNINGS_MAX; i++) {
+    mustBenchForPitching[i] = [];
+  }
+  for (let i = 2; i <= INNINGS_MAX; i++) {
+    const nextPitcher = pcAssignments[i]?.pitcher;
+    if (nextPitcher && available.includes(nextPitcher)) {
+      // The pitcher for inning i must be benched in inning i-1
+      // BUT only if they are not already pitching or catching in inning i-1
+      const prevPitcher = pcAssignments[i - 1]?.pitcher;
+      const prevCatcher = pcAssignments[i - 1]?.catcher;
+      if (nextPitcher !== prevPitcher && nextPitcher !== prevCatcher) {
+        mustBenchForPitching[i - 1].push(nextPitcher);
+      }
+    }
+  }
+
   // Track per-player: which positions assigned this game, and previous inning outfield
   const gamePositions = {}; // player -> [positions assigned]
   available.forEach(p => gamePositions[p] = []);
@@ -1070,8 +1088,12 @@ function assignPositions(available, battingOrder, benchCount, gameNum) {
     // Determine who gets benched this inning
     let benchPlayers = [];
     if (benchCount > 0) {
-      // Score each remaining player for bench eligibility
-      const benchCandidates = remaining.map(p => {
+      // Force-bench players who pitch NEXT inning (pre-pitch rest rule)
+      const forcedBench = mustBenchForPitching[inning].filter(p => remaining.includes(p));
+      benchPlayers.push(...forcedBench);
+
+      // Score each remaining player for bench eligibility (excluding forced bench)
+      const benchCandidates = remaining.filter(p => !forcedBench.includes(p)).map(p => {
         let score = 0;
         // Players who were benched last inning CANNOT be benched again
         if (inning > 1 && gameBenchInnings[p].includes(inning - 1)) {
