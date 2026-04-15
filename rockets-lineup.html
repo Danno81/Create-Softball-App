@@ -1,0 +1,2088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Rockets Lineup</title>
+<style>
+:root {
+  --bg: #f2f2f7;
+  --card: #ffffff;
+  --primary: #7B7FD4;
+  --primary-dark: #5C60C4;
+  --accent: #e63946;
+  --text: #1c1c1e;
+  --text2: #636366;
+  --text3: #aeaeb2;
+  --sep: #e5e5ea;
+  --green: #34c759;
+  --orange: #ff9500;
+  --blue: #007aff;
+  --yellow: #ffcc00;
+  --red: #ff3b30;
+  --radius: 12px;
+  --safe-top: env(safe-area-inset-top, 20px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+  overflow-x: hidden;
+}
+
+/* Navigation bar */
+.navbar {
+  background: rgba(242,242,247,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 0.5px solid var(--sep);
+  padding: 12px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+}
+.navbar .nav-title {
+  font-size: 17px;
+  font-weight: 600;
+  text-align: center;
+  flex: 1;
+}
+.navbar .nav-btn {
+  font-size: 17px;
+  color: var(--blue);
+  background: none;
+  border: none;
+  cursor: pointer;
+  min-width: 60px;
+  padding: 8px 4px;
+  font-family: inherit;
+}
+.navbar .nav-btn:first-child { text-align: left; }
+.navbar .nav-btn:last-child { text-align: right; }
+.navbar .nav-btn:disabled { color: var(--text3); }
+.navbar .nav-btn.destructive { color: var(--red); }
+
+/* Hero header */
+.hero {
+  text-align: center;
+  padding: 32px 16px 20px;
+}
+.hero h1 {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.hero .rocket-icon { font-size: 48px; margin-bottom: 8px; }
+.hero .subtitle {
+  font-size: 15px;
+  color: var(--text2);
+  margin-top: 4px;
+}
+.hero .game-num {
+  display: inline-block;
+  background: var(--primary);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+/* Sections */
+.section {
+  padding: 0 16px;
+  margin-bottom: 24px;
+}
+.section-header {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0 4px 8px;
+}
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 0 0 0.5px rgba(0,0,0,0.04);
+}
+
+/* Player rows */
+.player-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 0.5px solid var(--sep);
+  transition: background 0.15s;
+  cursor: pointer;
+  min-height: 48px;
+}
+.player-row:last-child { border-bottom: none; }
+.player-row:active { background: rgba(0,0,0,0.04); }
+.player-row .name { flex: 1; font-size: 17px; }
+.player-row .check {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--text3);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.player-row .check.checked {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.player-row .check.checked::after {
+  content: '✓';
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Toggle */
+.toggle-group {
+  display: flex;
+  background: rgba(118,118,128,0.12);
+  border-radius: 9px;
+  padding: 2px;
+  margin: 0 16px 24px;
+}
+.toggle-btn {
+  flex: 1;
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  border-radius: 7px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.toggle-btn.active {
+  background: white;
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 0 0 0.5px rgba(0,0,0,0.04);
+}
+
+/* Stepper */
+.stepper {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+}
+.step-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--text3);
+  transition: all 0.3s;
+}
+.step-dot.active {
+  background: var(--primary);
+  width: 24px;
+  border-radius: 4px;
+}
+.step-dot.done { background: var(--green); }
+
+/* Pitcher/Catcher assignment */
+.inning-assignment {
+  padding: 14px 16px;
+  border-bottom: 0.5px solid var(--sep);
+}
+.inning-assignment:last-child { border-bottom: none; }
+.inning-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.assign-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+  align-items: center;
+}
+.assign-row label {
+  font-size: 15px;
+  width: 70px;
+  color: var(--text2);
+  flex-shrink: 0;
+}
+.assign-row select {
+  flex: 1;
+  font-size: 16px;
+  padding: 8px 12px;
+  border: 1px solid var(--sep);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23636366' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+
+/* Big button */
+.big-btn {
+  display: block;
+  width: calc(100% - 32px);
+  margin: 0 16px 16px;
+  padding: 16px;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.1s, opacity 0.15s;
+}
+.big-btn:active { transform: scale(0.98); opacity: 0.8; }
+.big-btn.primary { background: var(--primary); color: white; }
+.big-btn.secondary { background: var(--accent); color: white; }
+.big-btn.outline { background: none; border: 2px solid var(--primary); color: var(--primary); }
+.big-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+
+/* Lineup view */
+.lineup-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.lineup-table th {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 10px 8px;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  border-bottom: 1px solid var(--sep);
+}
+.lineup-table th:first-child { text-align: left; padding-left: 16px; }
+.lineup-table td {
+  padding: 10px 8px;
+  text-align: center;
+  font-size: 14px;
+  border-bottom: 0.5px solid var(--sep);
+  vertical-align: middle;
+}
+.lineup-table td:first-child {
+  text-align: left;
+  padding-left: 16px;
+  font-weight: 500;
+  font-size: 15px;
+}
+.lineup-table tr:last-child td { border-bottom: none; }
+.lineup-table .bat-order {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  margin-right: 10px;
+}
+.bat-order {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+/* Drag & drop batting order */
+.batting-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 0.5px solid var(--sep);
+  min-height: 48px;
+  background: var(--card);
+  transition: background 0.15s, box-shadow 0.2s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.batting-row:last-child { border-bottom: none; }
+.batting-row .name { flex: 1; font-size: 17px; }
+.batting-row .drag-handle {
+  color: var(--text3);
+  font-size: 18px;
+  padding: 0 4px;
+  cursor: grab;
+  flex-shrink: 0;
+  display: none;
+}
+.batting-row .drag-handle.visible { display: block; }
+.batting-row.dragging {
+  opacity: 0.85;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  z-index: 10;
+  border-radius: 10px;
+}
+.batting-row.drag-over {
+  border-top: 2.5px solid var(--blue);
+}
+
+/* Position chips */
+.pos-chip {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 32px;
+  text-align: center;
+}
+.pos-P { background: #fce4e4; color: #c1121f; }
+.pos-C { background: #e4f0fc; color: #1d3557; }
+.pos-1B { background: #e8f5e9; color: #2d6a4f; }
+.pos-2B { background: #fff3e0; color: #e65100; }
+.pos-3B { background: #f3e5f5; color: #7b1fa2; }
+.pos-SS { background: #e0f2f1; color: #00695c; }
+.pos-LF { background: #fff8e1; color: #f57f17; }
+.pos-CF { background: #e1f5fe; color: #0277bd; }
+.pos-RF { background: #fce4ec; color: #c62828; }
+.pos-BN { background: #f5f5f5; color: #757575; }
+.pos-— { background: transparent; color: var(--text3); }
+
+/* Override select in cells */
+.pos-select {
+  font-size: 13px;
+  padding: 4px 6px;
+  border: 1.5px solid var(--blue);
+  border-radius: 6px;
+  background: white;
+  color: var(--text);
+  font-family: inherit;
+  font-weight: 600;
+  appearance: none;
+  -webkit-appearance: none;
+  text-align: center;
+  min-width: 50px;
+  cursor: pointer;
+}
+
+/* Action sheet */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+.overlay.show { opacity: 1; pointer-events: auto; }
+.action-sheet {
+  background: var(--bg);
+  border-radius: 14px 14px 0 0;
+  width: 100%;
+  max-width: 500px;
+  max-height: 85vh;
+  overflow-y: auto;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding-bottom: var(--safe-bottom);
+}
+.overlay.show .action-sheet { transform: translateY(0); }
+.sheet-handle {
+  width: 36px; height: 5px;
+  border-radius: 3px;
+  background: var(--text3);
+  margin: 8px auto 4px;
+}
+.sheet-title {
+  font-size: 17px;
+  font-weight: 600;
+  text-align: center;
+  padding: 12px 16px;
+}
+.sheet-body { padding: 0 16px 24px; }
+
+/* Badge */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge-home { background: var(--primary); color: white; }
+.badge-away { background: var(--accent); color: white; }
+
+/* Inning columns - removed state */
+.inning-removed th, .inning-removed td {
+  opacity: 0.25;
+  text-decoration: line-through;
+}
+
+/* History section */
+.history-item {
+  padding: 14px 16px;
+  border-bottom: 0.5px solid var(--sep);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.history-item:last-child { border-bottom: none; }
+.history-item .info h3 { font-size: 17px; font-weight: 500; }
+.history-item .info p { font-size: 13px; color: var(--text2); margin-top: 2px; }
+
+/* Alerts */
+.alert {
+  margin: 0 16px 16px;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.alert-info { background: #e1f5fe; color: #0277bd; }
+.alert-warn { background: #fff3e0; color: #e65100; }
+.alert-icon { font-size: 18px; flex-shrink: 0; }
+
+/* Screen transitions */
+.screen {
+  display: none;
+  animation: fadeIn 0.25s ease;
+}
+.screen.active { display: block; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Scrollable container */
+.scroll-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 16px;
+}
+.scroll-container .card { min-width: 600px; }
+
+/* Remove inning buttons */
+.inning-header-actions {
+  display: flex;
+  gap: 4px;
+}
+.inning-toggle-btn {
+  background: none;
+  border: 1px solid var(--sep);
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 11px;
+  cursor: pointer;
+  color: var(--text2);
+  font-family: inherit;
+}
+.inning-toggle-btn.removed {
+  background: var(--red);
+  color: white;
+  border-color: var(--red);
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 48px 32px;
+}
+.empty-state .icon { font-size: 64px; margin-bottom: 16px; }
+.empty-state h2 { font-size: 22px; font-weight: 600; margin-bottom: 8px; }
+.empty-state p { font-size: 15px; color: var(--text2); line-height: 1.5; }
+
+/* Tab bar */
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(249,249,249,0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 0.5px solid var(--sep);
+  display: flex;
+  padding: 6px 0 calc(6px + var(--safe-bottom));
+  z-index: 100;
+}
+.tab-bar.hidden { display: none; }
+.tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text3);
+  font-family: inherit;
+  transition: color 0.15s;
+}
+.tab-item.active { color: var(--primary); }
+.tab-item .tab-icon { font-size: 24px; }
+.tab-item .tab-label { font-size: 10px; font-weight: 500; }
+
+/* Bottom padding for tab bar */
+.screen { padding-bottom: 80px; }
+
+@media (min-width: 600px) {
+  body { max-width: 500px; margin: 0 auto; }
+  .tab-bar { max-width: 500px; left: 50%; transform: translateX(-50%); }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== SCREEN: Home ===== -->
+<div id="screen-home" class="screen active">
+  <div class="hero">
+    <div class="rocket-icon">🚀</div>
+    <h1>Rockets</h1>
+    <div class="subtitle">Batting Lineup & Positions</div>
+    <div class="game-num" id="home-game-num">Game #1</div>
+  </div>
+
+  <div id="current-game-summary" style="display:none;">
+    <div class="section">
+      <div class="section-header">Current Game</div>
+      <div class="card" id="current-game-card"></div>
+    </div>
+    <button class="big-btn primary" onclick="resumeGame()">Resume Game</button>
+  </div>
+
+  <button class="big-btn primary" id="new-game-btn" onclick="startNewGame()">
+    New Game
+  </button>
+  <button class="big-btn outline" onclick="showScreen('screen-history')" id="history-btn" style="display:none;">
+    Game History
+  </button>
+  <button class="big-btn outline" style="color:var(--red);border-color:var(--red);" onclick="confirmReset()">
+    Reset All Data
+  </button>
+</div>
+
+<!-- ===== SCREEN: Step 1 - Attendance ===== -->
+<div id="screen-step1" class="screen">
+  <div class="navbar">
+    <button class="nav-btn" onclick="showScreen('screen-home')">Cancel</button>
+    <span class="nav-title">Attendance</span>
+    <button class="nav-btn" onclick="goStep2()">Next</button>
+  </div>
+  <div class="stepper">
+    <div class="step-dot active"></div>
+    <div class="step-dot"></div>
+    <div class="step-dot"></div>
+  </div>
+  <div class="alert alert-info">
+    <span class="alert-icon">ℹ️</span>
+    <span>Tap players who are <strong>NOT available</strong> for this game to mark them absent.</span>
+  </div>
+  <div class="section">
+    <div class="section-header">Players</div>
+    <div class="card" id="attendance-list"></div>
+  </div>
+  <div id="attendance-count" style="text-align:center;color:var(--text2);font-size:15px;padding:8px;"></div>
+</div>
+
+<!-- ===== SCREEN: Step 1b - Home/Away ===== -->
+<div id="screen-step1b" class="screen">
+  <div class="navbar">
+    <button class="nav-btn" onclick="showScreen('screen-step1')">Back</button>
+    <span class="nav-title">Home or Away</span>
+    <button class="nav-btn" onclick="goStep2()">Next</button>
+  </div>
+  <div class="stepper">
+    <div class="step-dot done"></div>
+    <div class="step-dot active"></div>
+    <div class="step-dot"></div>
+  </div>
+  <div style="padding: 32px 16px; text-align: center;">
+    <p style="font-size:15px; color:var(--text2); margin-bottom:20px;">Are the Rockets home or away?</p>
+    <div class="toggle-group" style="margin:0 0 24px 0;">
+      <button class="toggle-btn active" id="toggle-home" onclick="setHomeAway('home')">🏠 Home</button>
+      <button class="toggle-btn" id="toggle-away" onclick="setHomeAway('away')">✈️ Away</button>
+    </div>
+    <div style="text-align:left;">
+      <label style="font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px;padding-left:4px;">Opponent Team Name</label>
+      <input type="text" id="opponent-name-input" placeholder="e.g. Thunder, Eagles..."
+        style="width:100%;font-size:16px;padding:12px 16px;border:1px solid var(--sep);border-radius:var(--radius);
+        background:var(--card);color:var(--text);font-family:inherit;outline:none;"
+        onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--sep)'"
+        oninput="opponentName=this.value">
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: Step 2 - Pitcher/Catcher ===== -->
+<div id="screen-step2" class="screen">
+  <div class="navbar">
+    <button class="nav-btn" onclick="showScreen('screen-step1b')">Back</button>
+    <span class="nav-title">Pitcher & Catcher</span>
+    <button class="nav-btn" onclick="goStep3()">Next</button>
+  </div>
+  <div class="stepper">
+    <div class="step-dot done"></div>
+    <div class="step-dot done"></div>
+    <div class="step-dot active"></div>
+  </div>
+  <div class="alert alert-info">
+    <span class="alert-icon">⚾</span>
+    <span>Assign a <strong>pitcher</strong> and <strong>catcher</strong> for each inning, or skip and set them later.</span>
+  </div>
+  <button class="big-btn outline" style="margin-bottom:8px;" onclick="skipPitcherCatcher()">
+    Skip — I'll set this later
+  </button>
+  <div class="section">
+    <div class="section-header">Inning Assignments</div>
+    <div class="card" id="pc-assignments"></div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: Game View ===== -->
+<div id="screen-game" class="screen">
+  <div class="navbar">
+    <button class="nav-btn" onclick="confirmEndGame()" id="end-game-btn">End</button>
+    <span class="nav-title" id="game-title">Game #1</span>
+    <button class="nav-btn" onclick="showGameMenu()">⋯</button>
+  </div>
+
+  <div style="padding: 8px 16px;">
+    <div class="toggle-group" style="margin:0;">
+      <button class="toggle-btn active" id="tab-batting" onclick="showGameTab('batting')">Batting</button>
+      <button class="toggle-btn" id="tab-field" onclick="showGameTab('field')">Field</button>
+    </div>
+  </div>
+
+  <!-- Batting Order Tab -->
+  <div id="game-batting" class="game-tab">
+    <div class="section">
+      <div class="section-header">Batting Order</div>
+      <div class="card">
+        <div id="batting-order-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Field Positions Tab -->
+  <div id="game-field" class="game-tab" style="display:none;">
+    <div class="section" style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="section-header" style="padding-bottom:0;">Field Positions</div>
+      <div id="override-mode-indicator" style="display:none;">
+        <span class="badge" style="background:var(--orange);color:white;">✏️ Edit Mode</span>
+      </div>
+    </div>
+    <div class="scroll-container">
+      <div class="card">
+        <table class="lineup-table" id="position-table">
+        </table>
+      </div>
+    </div>
+    <div style="padding:12px 16px;" id="field-actions"></div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: History ===== -->
+<div id="screen-history" class="screen">
+  <div class="navbar">
+    <button class="nav-btn" onclick="showScreen('screen-home')">Back</button>
+    <span class="nav-title">Game History</span>
+    <button class="nav-btn" style="min-width:auto;"></button>
+  </div>
+  <div class="section" style="margin-top:12px;">
+    <div class="card" id="history-list">
+      <div class="empty-state">
+        <div class="icon">📋</div>
+        <h2>No Games Yet</h2>
+        <p>Game history will appear here after you complete your first game.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Action Sheet Overlay ===== -->
+<div class="overlay" id="overlay" onclick="closeOverlay(event)">
+  <div class="action-sheet" id="action-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="sheet-title"></div>
+    <div class="sheet-body" id="sheet-body"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA & STATE
+// ============================================================
+const ALL_PLAYERS = [
+  'Alexandra','Audrey','Brooklynn','Celia','Coco','Harlow',
+  'Isabel','Kylie','Leah','Liv','Miella','Nayan','Portia','Siena','Teagan'
+];
+
+const FIELD_POSITIONS = ['P','C','1B','2B','3B','SS','LF','CF','RF'];
+const OUTFIELD = ['LF','CF','RF'];
+const INFIELD = ['1B','2B','3B','SS'];
+
+const INNINGS_MAX = 5;
+
+let state = loadState();
+
+function defaultState() {
+  return {
+    gameNumber: 1,
+    battingOrderBase: [...ALL_PLAYERS],
+    positionHistory: {},  // { playerName: { 'P': count, 'C': count, ... } }
+    benchHistory: {},     // { playerName: lastBenchGameInning } e.g. "3-2" = game 3 inning 2
+    games: [],
+    currentGame: null
+  };
+}
+
+function loadState() {
+  try {
+    const s = localStorage.getItem('rockets_lineup');
+    if (s) {
+      const parsed = JSON.parse(s);
+      // Ensure all fields exist
+      return { ...defaultState(), ...parsed };
+    }
+  } catch(e) {}
+  return defaultState();
+}
+
+function saveState() {
+  localStorage.setItem('rockets_lineup', JSON.stringify(state));
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ============================================================
+// HOME SCREEN
+// ============================================================
+function updateHome() {
+  document.getElementById('home-game-num').textContent = `Game #${state.gameNumber}`;
+  const hasHistory = state.games.length > 0;
+  document.getElementById('history-btn').style.display = hasHistory ? 'block' : 'none';
+
+  if (state.currentGame) {
+    document.getElementById('current-game-summary').style.display = 'block';
+    document.getElementById('new-game-btn').style.display = 'none';
+    const g = state.currentGame;
+    document.getElementById('current-game-card').innerHTML = `
+      <div class="player-row" style="cursor:default;">
+        <span class="name">${g.opponent ? `Game #${g.gameNumber} vs ${g.opponent}` : `Game #${g.gameNumber}`}</span>
+        <span class="badge ${g.homeAway === 'home' ? 'badge-home' : 'badge-away'}">
+          ${g.homeAway === 'home' ? '🏠 Home' : '✈️ Away'}
+        </span>
+      </div>
+      <div class="player-row" style="cursor:default;">
+        <span class="name" style="color:var(--text2);font-size:15px;">
+          ${g.availablePlayers.length} players · ${g.innings} innings
+        </span>
+      </div>
+    `;
+  } else {
+    document.getElementById('current-game-summary').style.display = 'none';
+    document.getElementById('new-game-btn').style.display = 'block';
+  }
+}
+
+// ============================================================
+// STEP 1: ATTENDANCE
+// ============================================================
+let absentPlayers = new Set();
+
+function startNewGame() {
+  absentPlayers = new Set();
+  opponentName = '';
+  renderAttendance();
+  showScreen('screen-step1');
+}
+
+function renderAttendance() {
+  const list = document.getElementById('attendance-list');
+  list.innerHTML = ALL_PLAYERS.map(name => `
+    <div class="player-row" onclick="toggleAbsent('${name}')">
+      <span class="name">${name}</span>
+      <div class="check ${absentPlayers.has(name) ? 'checked' : ''}" id="absent-${name}"></div>
+    </div>
+  `).join('');
+  updateAttendanceCount();
+}
+
+function toggleAbsent(name) {
+  if (absentPlayers.has(name)) absentPlayers.delete(name);
+  else absentPlayers.add(name);
+  const el = document.getElementById(`absent-${name}`);
+  el.classList.toggle('checked');
+  updateAttendanceCount();
+}
+
+function updateAttendanceCount() {
+  const avail = ALL_PLAYERS.length - absentPlayers.size;
+  document.getElementById('attendance-count').innerHTML =
+    `<strong>${avail}</strong> players available · <strong>${absentPlayers.size}</strong> absent`;
+}
+
+// ============================================================
+// STEP 1b: HOME/AWAY
+// ============================================================
+let homeAway = 'home';
+let opponentName = '';
+
+function setHomeAway(val) {
+  homeAway = val;
+  document.getElementById('toggle-home').classList.toggle('active', val === 'home');
+  document.getElementById('toggle-away').classList.toggle('active', val === 'away');
+}
+
+function goStep1b() {
+  showScreen('screen-step1b');
+}
+
+// ============================================================
+// STEP 2: PITCHER/CATCHER
+// ============================================================
+let pcAssignments = {}; // { 1: { pitcher: '', catcher: '' }, ... }
+
+function goStep2() {
+  // From step 1, go to step 1b first
+  if (document.getElementById('screen-step1').classList.contains('active')) {
+    const avail = ALL_PLAYERS.length - absentPlayers.size;
+    if (avail < 9) {
+      alert(`Need at least 9 players. Currently ${avail} available.`);
+      return;
+    }
+    goStep1b();
+    return;
+  }
+  // From step 1b, go to step 2
+  const available = ALL_PLAYERS.filter(n => !absentPlayers.has(n));
+  pcAssignments = {};
+  for (let i = 1; i <= INNINGS_MAX; i++) {
+    pcAssignments[i] = { pitcher: '', catcher: '' };
+  }
+  renderPCAssignments(available);
+  showScreen('screen-step2');
+}
+
+function renderPCAssignments(available) {
+  const container = document.getElementById('pc-assignments');
+  let html = '';
+  for (let i = 1; i <= INNINGS_MAX; i++) {
+    const topBot = homeAway === 'home' ? 'Bottom' : 'Top';
+    html += `
+      <div class="inning-assignment">
+        <div class="inning-label">Inning ${i} (${topBot})</div>
+        <div class="assign-row">
+          <label>Pitcher</label>
+          <select onchange="pcAssignments[${i}].pitcher=this.value" id="pc-p-${i}">
+            <option value="">Select pitcher...</option>
+            ${available.map(n => `<option value="${n}">${n}</option>`).join('')}
+          </select>
+        </div>
+        <div class="assign-row">
+          <label>Catcher</label>
+          <select onchange="pcAssignments[${i}].catcher=this.value" id="pc-c-${i}">
+            <option value="">Select catcher...</option>
+            ${available.map(n => `<option value="${n}">${n}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+    `;
+  }
+  container.innerHTML = html;
+}
+
+// ============================================================
+// STEP 3: GENERATE LINEUP
+// ============================================================
+let pcSkipped = false;
+
+function skipPitcherCatcher() {
+  pcSkipped = true;
+  // Clear all P/C assignments
+  for (let i = 1; i <= INNINGS_MAX; i++) {
+    pcAssignments[i] = { pitcher: '', catcher: '' };
+  }
+  const available = ALL_PLAYERS.filter(n => !absentPlayers.has(n));
+  const game = generateGame(available);
+  state.currentGame = game;
+  saveState();
+  renderGameView();
+  showScreen('screen-game');
+}
+
+function goStep3() {
+  // Validate P/C assignments
+  for (let i = 1; i <= INNINGS_MAX; i++) {
+    if (!pcAssignments[i].pitcher || !pcAssignments[i].catcher) {
+      alert(`Please assign both a pitcher and catcher for inning ${i}.`);
+      return;
+    }
+    if (pcAssignments[i].pitcher === pcAssignments[i].catcher) {
+      alert(`Pitcher and catcher cannot be the same player in inning ${i}.`);
+      return;
+    }
+  }
+  pcSkipped = false;
+
+  const available = ALL_PLAYERS.filter(n => !absentPlayers.has(n));
+  const game = generateGame(available);
+  state.currentGame = game;
+  saveState();
+  renderGameView();
+  showScreen('screen-game');
+}
+
+function generateGame(available) {
+  const gameNum = state.gameNumber;
+  const numPlayers = available.length;
+  const benchCount = Math.max(0, numPlayers - 9);
+
+  // --- BATTING ORDER ---
+  // Rotate the base order by (gameNumber - 1) and filter to available
+  const rotated = rotateBattingOrder(state.battingOrderBase, gameNum - 1);
+  const battingOrder = rotated.filter(n => available.includes(n));
+
+  // --- POSITION ASSIGNMENTS ---
+  const positions = assignPositions(available, battingOrder, benchCount, gameNum);
+
+  return {
+    gameNumber: gameNum,
+    homeAway: homeAway,
+    opponent: opponentName,
+    availablePlayers: available,
+    battingOrder: battingOrder,
+    positions: positions,  // { inning: { playerName: position } }
+    pcAssignments: { ...pcAssignments },
+    innings: INNINGS_MAX,
+    removedInnings: new Set(),
+    benchCount: benchCount,
+    overrideMode: false
+  };
+}
+
+function rotateBattingOrder(base, shift) {
+  const len = base.length;
+  if (len === 0) return [];
+  const s = shift % len;
+  return [...base.slice(s), ...base.slice(0, s)];
+}
+
+function assignPositions(available, battingOrder, benchCount, gameNum) {
+  const positions = {};
+  const numPlayers = available.length;
+
+  // Gather all P/C assignments
+  const pitcherInnings = {};  // player -> [innings]
+  const catcherInnings = {};
+  for (let i = 1; i <= INNINGS_MAX; i++) {
+    const p = pcAssignments[i].pitcher;
+    const c = pcAssignments[i].catcher;
+    if (!pitcherInnings[p]) pitcherInnings[p] = [];
+    pitcherInnings[p].push(i);
+    if (!catcherInnings[c]) catcherInnings[c] = [];
+    catcherInnings[c].push(i);
+  }
+
+  // Track per-player: which positions assigned this game, and previous inning outfield
+  const gamePositions = {}; // player -> [positions assigned]
+  available.forEach(p => gamePositions[p] = []);
+  const prevInningOutfield = new Set(); // who was in outfield last inning
+
+  // Track bench assignments this game
+  const gameBenchInnings = {}; // player -> [innings on bench]
+  available.forEach(p => gameBenchInnings[p] = []);
+
+  // Get bench priority: who hasn't been benched recently should be benched less
+  function benchPriority(player) {
+    // Lower = should be benched first (has been longest since last bench)
+    const hist = state.benchHistory[player];
+    if (!hist) return 0; // Never benched = high priority to bench
+    // Parse "game-inning" to a sortable number
+    const parts = hist.split('-');
+    return parseInt(parts[0]) * 100 + parseInt(parts[1]);
+  }
+
+  for (let inning = 1; inning <= INNINGS_MAX; inning++) {
+    const inningAssignment = {};
+    const pitcher = pcAssignments[inning]?.pitcher || '';
+    const catcher = pcAssignments[inning]?.catcher || '';
+    const hasPitcher = pitcher && available.includes(pitcher);
+    const hasCatcher = catcher && available.includes(catcher);
+
+    // Assign P and C if set
+    if (hasPitcher) {
+      inningAssignment[pitcher] = 'P';
+      gamePositions[pitcher].push('P');
+    }
+    if (hasCatcher) {
+      inningAssignment[catcher] = 'C';
+      gamePositions[catcher].push('C');
+    }
+
+    // Remaining players need field positions or bench
+    const remaining = available.filter(p =>
+      (hasPitcher ? p !== pitcher : true) && (hasCatcher ? p !== catcher : true)
+    );
+
+    // Determine who gets benched this inning
+    let benchPlayers = [];
+    if (benchCount > 0) {
+      // Score each remaining player for bench eligibility
+      const benchCandidates = remaining.map(p => {
+        let score = 0;
+        // Players who were benched last inning CANNOT be benched again
+        if (inning > 1 && gameBenchInnings[p].includes(inning - 1)) {
+          score = Infinity; // Cannot bench
+        }
+        // Prefer to bench players who haven't been benched recently
+        const lastBench = gameBenchInnings[p].length > 0 ?
+          gameBenchInnings[p][gameBenchInnings[p].length - 1] : -99;
+        // More innings since last bench = more eligible
+        score += (inning - lastBench);
+        // Factor in historical bench data
+        const histPriority = benchPriority(p);
+        if (histPriority === 0) score += 100; // Never benched historically
+        else score += (gameNum * 100 - histPriority);
+
+        return { player: p, score };
+      }).filter(c => c.score !== Infinity);
+
+      // Sort: highest score first (most overdue for bench)
+      benchCandidates.sort((a, b) => b.score - a.score);
+
+      // But also ensure we're not benching the same player too many times
+      // Limit: each player benched at most ceil(INNINGS_MAX * benchCount / numPlayers) times
+      const maxBenchPerPlayer = Math.ceil((INNINGS_MAX * benchCount) / (numPlayers - 2)); // exclude P/C pool roughly
+
+      for (const cand of benchCandidates) {
+        if (benchPlayers.length >= benchCount) break;
+        if (gameBenchInnings[cand.player].length < maxBenchPerPlayer) {
+          benchPlayers.push(cand.player);
+        }
+      }
+
+      // Fallback if we couldn't fill bench spots
+      if (benchPlayers.length < benchCount) {
+        for (const cand of benchCandidates) {
+          if (benchPlayers.length >= benchCount) break;
+          if (!benchPlayers.includes(cand.player)) {
+            benchPlayers.push(cand.player);
+          }
+        }
+      }
+
+      benchPlayers.forEach(p => {
+        inningAssignment[p] = 'BN';
+        gamePositions[p].push('BN');
+        gameBenchInnings[p].push(inning);
+      });
+    }
+
+    // Field players (excluding P, C, bench)
+    const fieldPlayers = remaining.filter(p => !benchPlayers.includes(p));
+
+    // Assign field positions — include P/C slots if not manually assigned
+    let fieldSlots = [...INFIELD, ...OUTFIELD]; // 7 base positions
+    if (!hasPitcher) fieldSlots.unshift('P');
+    if (!hasCatcher) fieldSlots.splice(hasPitcher ? 0 : 1, 0, 'C');
+
+    // Score each player for each position
+    // Constraints: no back-to-back outfield
+    const assignments = assignFieldPositions(fieldPlayers, fieldSlots, gamePositions, prevInningOutfield, state.positionHistory);
+
+    Object.entries(assignments).forEach(([player, pos]) => {
+      inningAssignment[player] = pos;
+      gamePositions[player].push(pos);
+    });
+
+    // Update prevInningOutfield
+    prevInningOutfield.clear();
+    Object.entries(inningAssignment).forEach(([player, pos]) => {
+      if (OUTFIELD.includes(pos)) prevInningOutfield.add(player);
+    });
+
+    positions[inning] = inningAssignment;
+  }
+
+  return positions;
+}
+
+function assignFieldPositions(players, slots, gamePositions, prevOutfield, history) {
+  // Hungarian-ish greedy assignment
+  // Score matrix: player x position (lower = better)
+  const n = players.length;
+  const m = slots.length;
+
+  // Build score matrix
+  const scores = [];
+  for (let i = 0; i < n; i++) {
+    const pScores = [];
+    const player = players[i];
+    const prevPositions = gamePositions[player] || [];
+    const hist = history[player] || {};
+
+    for (let j = 0; j < m; j++) {
+      const pos = slots[j];
+      let score = 0;
+
+      // Heavy penalty if player already played this position this game
+      if (prevPositions.includes(pos)) score += 1000;
+
+      // No back-to-back outfield: heavy penalty
+      if (OUTFIELD.includes(pos) && prevOutfield.has(player)) score += 5000;
+
+      // Prefer positions player has less experience in (from history)
+      const timesPlayed = hist[pos] || 0;
+      score += timesPlayed * 10;
+
+      // Small random tiebreaker for variety
+      score += Math.random() * 2;
+
+      pScores.push(score);
+    }
+    scores.push(pScores);
+  }
+
+  // Greedy assignment (works well enough for 7 players, 7 positions)
+  const assignment = {};
+  const usedPlayers = new Set();
+  const usedSlots = new Set();
+
+  // Sort all (player, slot) pairs by score
+  const pairs = [];
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < m; j++) {
+      pairs.push({ player: i, slot: j, score: scores[i][j] });
+    }
+  }
+  pairs.sort((a, b) => a.score - b.score);
+
+  for (const pair of pairs) {
+    if (usedPlayers.has(pair.player) || usedSlots.has(pair.slot)) continue;
+    assignment[players[pair.player]] = slots[pair.slot];
+    usedPlayers.add(pair.player);
+    usedSlots.add(pair.slot);
+    if (usedPlayers.size === Math.min(n, m)) break;
+  }
+
+  return assignment;
+}
+
+// ============================================================
+// GAME VIEW
+// ============================================================
+let overrideMode = false;
+
+function renderGameView() {
+  const g = state.currentGame;
+  if (!g) return;
+
+  document.getElementById('game-title').textContent = g.opponent
+    ? `Game #${g.gameNumber} vs ${g.opponent}`
+    : `Game #${g.gameNumber}`;
+  document.getElementById('end-game-btn').textContent = editingGameIdx !== null ? 'Save' : 'End';
+  renderBattingOrder();
+  renderPositionTable();
+  showGameTab('batting');
+}
+
+function showGameTab(tab) {
+  document.getElementById('game-batting').style.display = tab === 'batting' ? 'block' : 'none';
+  document.getElementById('game-field').style.display = tab === 'field' ? 'block' : 'none';
+  document.getElementById('tab-batting').classList.toggle('active', tab === 'batting');
+  document.getElementById('tab-field').classList.toggle('active', tab === 'field');
+}
+
+function renderBattingOrder() {
+  const g = state.currentGame;
+  const list = document.getElementById('batting-order-list');
+  const showHandles = overrideMode;
+  list.innerHTML = g.battingOrder.map((name, idx) => `
+    <div class="batting-row" draggable="${showHandles}" data-idx="${idx}"
+      ${showHandles ? `ondragstart="batDragStart(event,${idx})" ondragend="batDragEnd(event)"
+       ondragover="batDragOver(event,${idx})" ondragleave="batDragLeave(event)"
+       ondrop="batDrop(event,${idx})"
+       ontouchstart="batTouchStart(event,${idx})" ontouchmove="batTouchMove(event)"
+       ontouchend="batTouchEnd(event)"` : ''}>
+      <span class="bat-order">${idx + 1}</span>
+      <span class="name">${name}</span>
+      <span class="drag-handle ${showHandles ? 'visible' : ''}">☰</span>
+    </div>
+  `).join('');
+}
+
+// --- Drag & Drop (desktop) ---
+let batDragIdx = null;
+
+function batDragStart(e, idx) {
+  batDragIdx = idx;
+  e.target.closest('.batting-row').classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+function batDragEnd(e) {
+  batDragIdx = null;
+  document.querySelectorAll('.batting-row').forEach(r => {
+    r.classList.remove('dragging', 'drag-over');
+  });
+}
+function batDragOver(e, idx) {
+  e.preventDefault();
+  if (batDragIdx === null || batDragIdx === idx) return;
+  const row = e.target.closest('.batting-row');
+  if (row) row.classList.add('drag-over');
+}
+function batDragLeave(e) {
+  const row = e.target.closest('.batting-row');
+  if (row) row.classList.remove('drag-over');
+}
+function batDrop(e, targetIdx) {
+  e.preventDefault();
+  if (batDragIdx === null || batDragIdx === targetIdx) return;
+  const g = state.currentGame;
+  const moved = g.battingOrder.splice(batDragIdx, 1)[0];
+  g.battingOrder.splice(targetIdx, 0, moved);
+  state.currentGame = g;
+  saveState();
+  renderBattingOrder();
+  renderPositionTable(); // re-render since row order follows batting order
+}
+
+// --- Touch drag (mobile) ---
+let touchDragIdx = null;
+let touchClone = null;
+let touchStartY = 0;
+let touchCurrentOverIdx = null;
+
+function batTouchStart(e, idx) {
+  if (!overrideMode) return;
+  touchDragIdx = idx;
+  touchStartY = e.touches[0].clientY;
+
+  const row = e.target.closest('.batting-row');
+  // Create floating clone
+  touchClone = row.cloneNode(true);
+  touchClone.style.cssText = `
+    position:fixed; left:16px; right:16px; z-index:999;
+    top:${row.getBoundingClientRect().top}px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.2); border-radius:10px;
+    opacity:0.92; pointer-events:none; background:white;
+  `;
+  document.body.appendChild(touchClone);
+  row.classList.add('dragging');
+}
+
+function batTouchMove(e) {
+  if (touchDragIdx === null || !touchClone) return;
+  e.preventDefault();
+  const touch = e.touches[0];
+  const dy = touch.clientY - touchStartY;
+  const origTop = parseFloat(touchClone.dataset.origTop ||
+    (touchClone.dataset.origTop = touchClone.style.top.replace('px','')));
+  touchClone.style.top = (origTop + dy) + 'px';
+
+  // Determine which row we're over
+  document.querySelectorAll('.batting-row').forEach((row, idx) => {
+    row.classList.remove('drag-over');
+    const rect = row.getBoundingClientRect();
+    if (touch.clientY > rect.top && touch.clientY < rect.bottom && idx !== touchDragIdx) {
+      row.classList.add('drag-over');
+      touchCurrentOverIdx = idx;
+    }
+  });
+}
+
+function batTouchEnd(e) {
+  if (touchDragIdx === null) return;
+  if (touchClone) {
+    touchClone.remove();
+    touchClone = null;
+  }
+  document.querySelectorAll('.batting-row').forEach(r => {
+    r.classList.remove('dragging', 'drag-over');
+  });
+
+  if (touchCurrentOverIdx !== null && touchCurrentOverIdx !== touchDragIdx) {
+    const g = state.currentGame;
+    const moved = g.battingOrder.splice(touchDragIdx, 1)[0];
+    g.battingOrder.splice(touchCurrentOverIdx, 0, moved);
+    state.currentGame = g;
+    saveState();
+    renderBattingOrder();
+    renderPositionTable();
+  }
+
+  touchDragIdx = null;
+  touchCurrentOverIdx = null;
+}
+
+function renderPositionTable() {
+  const g = state.currentGame;
+  const table = document.getElementById('position-table');
+  const removedInnings = g.removedInnings instanceof Set ? g.removedInnings : new Set(g.removedInnings || []);
+
+  // Header
+  let html = '<thead><tr><th style="min-width:110px;">Player</th>';
+  for (let i = 1; i <= g.innings; i++) {
+    const removed = removedInnings.has(i);
+    const topBot = g.homeAway === 'home' ? 'B' : 'T';
+    html += `<th class="${removed ? 'inning-removed' : ''}">
+      <div>${topBot}${i}</div>
+      <button class="inning-toggle-btn ${removed ? 'removed' : ''}"
+        onclick="toggleInning(${i})" title="${removed ? 'Restore' : 'Remove'} inning">
+        ${removed ? '↩' : '✕'}
+      </button>
+    </th>`;
+  }
+  html += '</tr></thead><tbody>';
+
+  // Rows by batting order
+  g.battingOrder.forEach(player => {
+    html += `<tr><td>${player}</td>`;
+    for (let i = 1; i <= g.innings; i++) {
+      const removed = removedInnings.has(i);
+      const pos = g.positions[i]?.[player] || '—';
+      const chipClass = `pos-${pos}`;
+
+      if (overrideMode && !removed) {
+        html += `<td>
+          <select class="pos-select" onchange="overridePosition('${player}',${i},this.value)"
+            value="${pos}">
+            ${getPositionOptions(pos, g)}
+          </select>
+        </td>`;
+      } else {
+        html += `<td class="${removed ? 'inning-removed' : ''}">
+          <span class="pos-chip ${chipClass}">${pos}</span>
+        </td>`;
+      }
+    }
+    html += '</tr>';
+  });
+
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+
+function getPositionOptions(currentPos, game) {
+  const allPos = [...FIELD_POSITIONS, 'BN'];
+  return allPos.map(p =>
+    `<option value="${p}" ${p === currentPos ? 'selected' : ''}>${p}</option>`
+  ).join('');
+}
+
+function toggleOverrideMode() {
+  overrideMode = !overrideMode;
+  const indicator = document.getElementById('override-mode-indicator');
+  indicator.style.display = overrideMode ? 'block' : 'none';
+  renderBattingOrder();
+  renderPositionTable();
+}
+
+function overridePosition(player, inning, newPos) {
+  const g = state.currentGame;
+  // Check if someone else has this position
+  const currentHolder = Object.entries(g.positions[inning]).find(([p, pos]) => pos === newPos && p !== player);
+
+  if (currentHolder && newPos !== 'BN') {
+    // Swap
+    const oldPos = g.positions[inning][player];
+    g.positions[inning][currentHolder[0]] = oldPos;
+  }
+
+  g.positions[inning][player] = newPos;
+  state.currentGame = g;
+  saveState();
+  renderPositionTable();
+}
+
+function toggleInning(inning) {
+  const g = state.currentGame;
+  // Convert from array if needed (JSON doesn't serialize Sets)
+  if (!(g.removedInnings instanceof Set)) {
+    g.removedInnings = new Set(g.removedInnings || []);
+  }
+  if (g.removedInnings.has(inning)) {
+    g.removedInnings.delete(inning);
+  } else {
+    g.removedInnings.add(inning);
+  }
+  state.currentGame = g;
+  saveState();
+  renderPositionTable();
+}
+
+// ============================================================
+// GAME MENU (Action Sheet)
+// ============================================================
+function showGameMenu() {
+  const g = state.currentGame;
+  const pcLabel = hasPCAssignments(g) ? '⚾ Edit Pitcher/Catcher' : '⚾ Set Pitcher/Catcher';
+  openSheet('Game Options', `
+    <div class="card">
+      <div class="player-row" onclick="closeSheet();showPCEditor();">
+        <span class="name">${pcLabel}</span>
+      </div>
+      <div class="player-row" onclick="closeSheet();showAddPlayerSheet();">
+        <span class="name">➕ Add Player Mid-Game</span>
+      </div>
+      <div class="player-row" onclick="closeSheet();showRemovePlayerSheet();">
+        <span class="name">➖ Remove Player Mid-Game</span>
+      </div>
+      <div class="player-row" onclick="closeSheet();adjustInnings();">
+        <span class="name">⏱ Adjust Innings Count</span>
+      </div>
+      <div class="player-row" onclick="closeSheet();toggleOverrideMode();">
+        <span class="name">${overrideMode ? '🔒 Exit Edit Mode' : '✏️ Enter Edit Mode'}</span>
+      </div>
+    </div>
+  `);
+}
+
+function hasPCAssignments(g) {
+  if (!g.pcAssignments) return false;
+  for (let i = 1; i <= g.innings; i++) {
+    if (g.pcAssignments[i]?.pitcher && g.pcAssignments[i]?.catcher) return true;
+  }
+  return false;
+}
+
+function showPCEditor() {
+  const g = state.currentGame;
+  const available = g.availablePlayers;
+
+  let html = `
+    <p style="color:var(--text2);font-size:14px;margin-bottom:12px;">
+      Assign pitcher and catcher for each inning. Positions will be recalculated automatically.
+    </p>
+    <div class="card">
+  `;
+
+  for (let i = 1; i <= g.innings; i++) {
+    const currentP = g.pcAssignments?.[i]?.pitcher || '';
+    const currentC = g.pcAssignments?.[i]?.catcher || '';
+    const topBot = g.homeAway === 'home' ? 'Bottom' : 'Top';
+    html += `
+      <div class="inning-assignment">
+        <div class="inning-label">Inning ${i} (${topBot})</div>
+        <div class="assign-row">
+          <label>Pitcher</label>
+          <select id="edit-pc-p-${i}">
+            <option value="">Select pitcher...</option>
+            ${available.map(n => `<option value="${n}" ${n === currentP ? 'selected' : ''}>${n}</option>`).join('')}
+          </select>
+        </div>
+        <div class="assign-row">
+          <label>Catcher</label>
+          <select id="edit-pc-c-${i}">
+            <option value="">Select catcher...</option>
+            ${available.map(n => `<option value="${n}" ${n === currentC ? 'selected' : ''}>${n}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+    `;
+  }
+
+  html += `</div>
+    <button class="big-btn primary" style="margin-top:16px;" onclick="applyPCChanges()">
+      Apply & Recalculate Positions
+    </button>
+    <button class="big-btn outline" style="margin-top:4px;" onclick="closeSheet()">
+      Cancel
+    </button>
+  `;
+
+  openSheet('Pitcher & Catcher', html);
+}
+
+function applyPCChanges() {
+  const g = state.currentGame;
+
+  // Read new P/C from the sheet form
+  const newPC = {};
+  for (let i = 1; i <= g.innings; i++) {
+    const pitcher = document.getElementById(`edit-pc-p-${i}`).value;
+    const catcher = document.getElementById(`edit-pc-c-${i}`).value;
+    newPC[i] = { pitcher, catcher };
+
+    // Validate: if one is set, both must be set
+    if ((pitcher && !catcher) || (!pitcher && catcher)) {
+      alert(`Please assign both a pitcher and catcher for inning ${i}, or leave both empty.`);
+      return;
+    }
+    if (pitcher && catcher && pitcher === catcher) {
+      alert(`Pitcher and catcher cannot be the same player in inning ${i}.`);
+      return;
+    }
+  }
+
+  // Update pcAssignments on the game and on the global
+  g.pcAssignments = newPC;
+  pcAssignments = newPC;
+  pcSkipped = false;
+
+  // Regenerate positions with the new P/C
+  const positions = assignPositions(g.availablePlayers, g.battingOrder, g.benchCount, g.gameNumber);
+  g.positions = positions;
+
+  state.currentGame = g;
+  saveState();
+  closeSheet();
+  renderGameView();
+}
+
+// --- Add Player: step 1 (pick player) ---
+function showAddPlayerSheet() {
+  const g = state.currentGame;
+  const absent = ALL_PLAYERS.filter(n => !g.availablePlayers.includes(n));
+  if (absent.length === 0) {
+    alert('All players are already in the game.');
+    return;
+  }
+  openSheet('Add Player', `
+    <p style="color:var(--text2);font-size:14px;margin-bottom:12px;">
+      Select a player to add to the game.
+    </p>
+    <div class="card">
+      ${absent.map(name => `
+        <div class="player-row" onclick="showAddPlayerInningPicker('${name}')">
+          <span class="name">${name}</span>
+          <span style="color:var(--blue);font-size:18px;">›</span>
+        </div>
+      `).join('')}
+    </div>
+  `);
+}
+
+// --- Add Player: step 2 (pick starting inning) ---
+function showAddPlayerInningPicker(name) {
+  const g = state.currentGame;
+  openSheet(`Add ${name}`, `
+    <p style="color:var(--text2);font-size:14px;margin-bottom:12px;">
+      Starting which inning?
+    </p>
+    <div class="card">
+      ${Array.from({length: g.innings}, (_, i) => i + 1).map(inn => `
+        <div class="player-row" onclick="addPlayerMidGame('${name}', ${inn})">
+          <span class="name">Inning ${inn}</span>
+        </div>
+      `).join('')}
+    </div>
+  `);
+}
+
+function addPlayerMidGame(name, fromInning) {
+  const g = state.currentGame;
+  g.availablePlayers.push(name);
+  g.battingOrder.push(name);
+  g.benchCount = Math.max(0, g.availablePlayers.length - 9);
+
+  // Before the starting inning: player doesn't appear (mark as '—' / absent)
+  for (let i = 1; i < fromInning; i++) {
+    g.positions[i][name] = '—';
+  }
+
+  // From the starting inning onward: add as bench (they enter the game)
+  for (let i = fromInning; i <= g.innings; i++) {
+    // If there's a benched player we can swap out, give the new player a field spot
+    const benchPlayer = Object.entries(g.positions[i])
+      .find(([p, pos]) => pos === 'BN');
+    if (benchPlayer) {
+      // New player takes bench, existing bench player stays — or swap if bench count allows
+      g.positions[i][name] = 'BN';
+    } else {
+      g.positions[i][name] = 'BN';
+    }
+  }
+
+  state.currentGame = g;
+  saveState();
+  closeSheet();
+  renderGameView();
+}
+
+// --- Remove Player: step 1 (pick player) ---
+function showRemovePlayerSheet() {
+  const g = state.currentGame;
+  openSheet('Remove Player', `
+    <p style="color:var(--text2);font-size:14px;margin-bottom:12px;">
+      Select a player to remove from the game.
+    </p>
+    <div class="card">
+      ${g.availablePlayers.map(name => `
+        <div class="player-row" onclick="showRemovePlayerInningPicker('${name}')">
+          <span class="name">${name}</span>
+          <span style="color:var(--blue);font-size:18px;">›</span>
+        </div>
+      `).join('')}
+    </div>
+  `);
+}
+
+// --- Remove Player: step 2 (pick starting inning) ---
+function showRemovePlayerInningPicker(name) {
+  const g = state.currentGame;
+  openSheet(`Remove ${name}`, `
+    <p style="color:var(--text2);font-size:14px;margin-bottom:12px;">
+      Starting which inning? Their earlier innings stay unchanged.
+    </p>
+    <div class="card">
+      ${Array.from({length: g.innings}, (_, i) => i + 1).map(inn => `
+        <div class="player-row" onclick="removePlayerMidGame('${name}', ${inn})">
+          <span class="name">Inning ${inn}</span>
+        </div>
+      `).join('')}
+    </div>
+  `);
+}
+
+function removePlayerMidGame(name, fromInning) {
+  const g = state.currentGame;
+
+  // From the starting inning onward: remove player and reassign
+  for (let i = fromInning; i <= g.innings; i++) {
+    const pos = g.positions[i][name];
+    delete g.positions[i][name];
+    // If they had a field position, promote a benched player
+    if (pos && pos !== 'BN' && pos !== '—') {
+      const benchPlayer = Object.entries(g.positions[i])
+        .find(([p, ppos]) => ppos === 'BN');
+      if (benchPlayer) {
+        g.positions[i][benchPlayer[0]] = pos;
+      }
+    }
+  }
+
+  // If removed from inning 1, fully remove from roster and batting order
+  if (fromInning === 1) {
+    g.availablePlayers = g.availablePlayers.filter(n => n !== name);
+    g.battingOrder = g.battingOrder.filter(n => n !== name);
+  } else {
+    // Mark as '—' from that inning on (they left mid-game but keep earlier data)
+    for (let i = fromInning; i <= g.innings; i++) {
+      g.positions[i][name] = '—';
+    }
+  }
+
+  g.benchCount = Math.max(0, g.availablePlayers.filter(p => {
+    // Count players still active in at least one remaining inning
+    for (let i = fromInning; i <= g.innings; i++) {
+      if (g.positions[i][p] && g.positions[i][p] !== '—') return true;
+    }
+    return false;
+  }).length - 9);
+
+  state.currentGame = g;
+  saveState();
+  closeSheet();
+  renderGameView();
+}
+
+function adjustInnings() {
+  const g = state.currentGame;
+  openSheet('Adjust Innings', `
+    <p style="color:var(--text2);font-size:14px;margin-bottom:12px;">
+      Current: ${g.innings} innings. Tap to change.
+    </p>
+    <div class="card">
+      ${[3, 4, 5].map(n => `
+        <div class="player-row" onclick="setInnings(${n})" style="${n === g.innings ? 'background:rgba(0,122,255,0.08);' : ''}">
+          <span class="name">${n} innings ${n === g.innings ? '(current)' : ''}</span>
+          ${n === g.innings ? '<span style="color:var(--blue);font-weight:600;">✓</span>' : ''}
+        </div>
+      `).join('')}
+    </div>
+  `);
+}
+
+function setInnings(n) {
+  const g = state.currentGame;
+  const oldInnings = g.innings;
+  g.innings = n;
+
+  // Generate positions for new innings if expanding
+  if (n > oldInnings) {
+    for (let i = oldInnings + 1; i <= n; i++) {
+      if (!g.positions[i]) {
+        // Copy structure from last inning with rotation
+        g.positions[i] = {};
+        g.availablePlayers.forEach(p => {
+          g.positions[i][p] = 'BN';
+        });
+        // Assign P/C if defined
+        if (g.pcAssignments[i]) {
+          if (g.pcAssignments[i].pitcher) g.positions[i][g.pcAssignments[i].pitcher] = 'P';
+          if (g.pcAssignments[i].catcher) g.positions[i][g.pcAssignments[i].catcher] = 'C';
+        }
+      }
+    }
+  }
+
+  state.currentGame = g;
+  saveState();
+  closeSheet();
+  renderPositionTable();
+}
+
+// ============================================================
+// END GAME
+// ============================================================
+function endGame() {
+  const g = state.currentGame;
+
+  // Convert removedInnings Set to array for JSON
+  const removedArr = g.removedInnings instanceof Set ? [...g.removedInnings] : (g.removedInnings || []);
+
+  // Update position history
+  for (let i = 1; i <= g.innings; i++) {
+    if (removedArr.includes(i)) continue;
+    Object.entries(g.positions[i]).forEach(([player, pos]) => {
+      if (!state.positionHistory[player]) state.positionHistory[player] = {};
+      if (!state.positionHistory[player][pos]) state.positionHistory[player][pos] = 0;
+      state.positionHistory[player][pos]++;
+    });
+  }
+
+  // Update bench history
+  for (let i = g.innings; i >= 1; i--) {
+    if (removedArr.includes(i)) continue;
+    Object.entries(g.positions[i]).forEach(([player, pos]) => {
+      if (pos === 'BN') {
+        state.benchHistory[player] = `${g.gameNumber}-${i}`;
+      }
+    });
+  }
+
+  // Save to history
+  state.games.push({
+    gameNumber: g.gameNumber,
+    homeAway: g.homeAway,
+    opponent: g.opponent || '',
+    players: g.availablePlayers.length,
+    battingOrder: [...g.battingOrder],
+    positions: JSON.parse(JSON.stringify(g.positions)),
+    innings: g.innings,
+    removedInnings: removedArr,
+    date: new Date().toISOString()
+  });
+
+  state.gameNumber++;
+  state.currentGame = null;
+  editingGameIdx = null;
+  overrideMode = false;
+  saveState();
+  updateHome();
+  renderHistory();
+  showScreen('screen-home');
+}
+
+function resumeGame() {
+  // Restore Set
+  const g = state.currentGame;
+  if (!(g.removedInnings instanceof Set)) {
+    g.removedInnings = new Set(g.removedInnings || []);
+  }
+  renderGameView();
+  showScreen('screen-game');
+}
+
+// ============================================================
+// HISTORY
+// ============================================================
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  if (state.games.length === 0) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">📋</div>
+        <h2>No Games Yet</h2>
+        <p>Game history will appear here after you complete your first game.</p>
+      </div>
+    `;
+    return;
+  }
+
+  list.innerHTML = state.games.map((g, idx) => {
+    const date = new Date(g.date).toLocaleDateString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric'
+    });
+    const title = g.opponent
+      ? `Game #${g.gameNumber} vs ${g.opponent}`
+      : `Game #${g.gameNumber}`;
+    return `
+      <div class="history-item" onclick="viewHistoryGame(${idx})">
+        <div class="info">
+          <h3>${title}</h3>
+          <p>${date} · ${g.players} players · ${g.homeAway === 'home' ? '🏠 Home' : '✈️ Away'}</p>
+        </div>
+        <span style="color:var(--blue);font-size:22px;">›</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function viewHistoryGame(idx) {
+  const g = state.games[idx];
+  const title = g.opponent
+    ? `Game #${g.gameNumber} vs ${g.opponent}`
+    : `Game #${g.gameNumber}`;
+  openSheet(title, `
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <button class="big-btn secondary" style="flex:1;margin:0;font-size:14px;" onclick="closeSheet();editHistoryGame(${idx})">
+        ✏️ Edit Game
+      </button>
+      <button class="big-btn outline" style="flex:1;margin:0;font-size:14px;color:var(--red);border-color:var(--red);" onclick="promptDeleteGame(${idx})">
+        🗑 Delete Game
+      </button>
+    </div>
+    <div class="section-header">Batting Order</div>
+    <div class="card" style="margin-bottom:16px;">
+      ${g.battingOrder.map((name, i) => `
+        <div class="player-row" style="cursor:default;padding:8px 16px;">
+          <span class="bat-order">${i + 1}</span>
+          <span class="name">${name}</span>
+        </div>
+      `).join('')}
+    </div>
+    <div class="section-header">Field Positions</div>
+    <div style="overflow-x:auto;">
+      <table class="lineup-table" style="min-width:500px;">
+        <thead><tr>
+          <th style="min-width:100px;">Player</th>
+          ${Array.from({length: g.innings}, (_, i) => {
+            const removed = (g.removedInnings || []).includes(i + 1);
+            return `<th class="${removed ? 'inning-removed' : ''}">Inn ${i+1}</th>`;
+          }).join('')}
+        </tr></thead>
+        <tbody>
+          ${g.battingOrder.map(player => `
+            <tr>
+              <td>${player}</td>
+              ${Array.from({length: g.innings}, (_, i) => {
+                const inn = i + 1;
+                const removed = (g.removedInnings || []).includes(inn);
+                const pos = g.positions[inn]?.[player] || '—';
+                return `<td class="${removed ? 'inning-removed' : ''}">
+                  <span class="pos-chip pos-${pos}">${pos}</span>
+                </td>`;
+              }).join('')}
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `);
+}
+
+// ============================================================
+// EDIT HISTORY GAME
+// ============================================================
+let editingGameIdx = null;
+
+function editHistoryGame(idx) {
+  editingGameIdx = idx;
+  const g = state.games[idx];
+
+  // Load this game as the current game for editing
+  const editGame = {
+    ...g,
+    availablePlayers: [...(g.availablePlayers || g.battingOrder)],
+    battingOrder: [...g.battingOrder],
+    positions: JSON.parse(JSON.stringify(g.positions)),
+    pcAssignments: g.pcAssignments || {},
+    removedInnings: new Set(g.removedInnings || []),
+    benchCount: Math.max(0, (g.availablePlayers || g.battingOrder).length - 9),
+    opponent: g.opponent || ''
+  };
+
+  state.currentGame = editGame;
+  overrideMode = true; // start in edit mode so positions are editable
+  saveState();
+  renderGameView();
+  showScreen('screen-game');
+}
+
+function confirmEndGame() {
+  if (editingGameIdx !== null) {
+    if (confirm('Save changes to this game?')) {
+      saveEditedGame();
+    }
+  } else {
+    if (confirm('End this game and save to history?')) {
+      endGame();
+    }
+  }
+}
+
+function saveEditedGame() {
+  const g = state.currentGame;
+  const removedArr = g.removedInnings instanceof Set ? [...g.removedInnings] : (g.removedInnings || []);
+
+  // Update the existing game record
+  state.games[editingGameIdx] = {
+    ...state.games[editingGameIdx],
+    homeAway: g.homeAway,
+    opponent: g.opponent || '',
+    players: g.availablePlayers.length,
+    battingOrder: [...g.battingOrder],
+    positions: JSON.parse(JSON.stringify(g.positions)),
+    innings: g.innings,
+    removedInnings: removedArr
+  };
+
+  state.currentGame = null;
+  editingGameIdx = null;
+  overrideMode = false;
+  saveState();
+  updateHome();
+  renderHistory();
+  showScreen('screen-history');
+}
+
+// ============================================================
+// DELETE HISTORY GAME (password protected)
+// ============================================================
+function promptDeleteGame(idx) {
+  const g = state.games[idx];
+  const title = g.opponent
+    ? `Game #${g.gameNumber} vs ${g.opponent}`
+    : `Game #${g.gameNumber}`;
+
+  document.getElementById('sheet-body').innerHTML = `
+    <div style="text-align:center;padding:16px 0;">
+      <p style="font-size:15px;color:var(--text);margin-bottom:16px;">
+        Enter password to delete <strong>${title}</strong>
+      </p>
+      <input type="password" id="delete-password" placeholder="Enter password"
+        inputmode="numeric" maxlength="4"
+        style="width:200px;font-size:20px;padding:12px 16px;border:1px solid var(--sep);
+        border-radius:var(--radius);background:var(--card);color:var(--text);
+        font-family:inherit;text-align:center;letter-spacing:8px;outline:none;"
+        onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--sep)'">
+      <div id="delete-error" style="color:var(--red);font-size:13px;margin-top:8px;min-height:20px;"></div>
+      <button class="big-btn primary" style="margin-top:8px;background:var(--red);"
+        onclick="attemptDeleteGame(${idx})">
+        Delete Game
+      </button>
+      <button class="big-btn outline" style="margin-top:4px;" onclick="closeSheet()">
+        Cancel
+      </button>
+    </div>
+  `;
+}
+
+function attemptDeleteGame(idx) {
+  const pw = document.getElementById('delete-password').value;
+  if (pw !== '6135') {
+    document.getElementById('delete-error').textContent = 'Incorrect password';
+    document.getElementById('delete-password').value = '';
+    document.getElementById('delete-password').focus();
+    return;
+  }
+  state.games.splice(idx, 1);
+  saveState();
+  closeSheet();
+  updateHome();
+  renderHistory();
+}
+
+// ============================================================
+// ACTION SHEET
+// ============================================================
+function openSheet(title, bodyHtml) {
+  document.getElementById('sheet-title').textContent = title;
+  document.getElementById('sheet-body').innerHTML = bodyHtml;
+  document.getElementById('overlay').classList.add('show');
+}
+
+function closeSheet() {
+  document.getElementById('overlay').classList.remove('show');
+}
+
+function closeOverlay(e) {
+  if (e.target === document.getElementById('overlay')) closeSheet();
+}
+
+// ============================================================
+// RESET
+// ============================================================
+function confirmReset() {
+  if (confirm('This will delete ALL game history and data. Are you sure?')) {
+    if (confirm('Really reset everything? This cannot be undone.')) {
+      localStorage.removeItem('rockets_lineup');
+      state = defaultState();
+      overrideMode = false;
+      updateHome();
+      renderHistory();
+    }
+  }
+}
+
+// ============================================================
+// JSON SERIALIZATION FIX: Sets don't survive JSON.stringify
+// ============================================================
+const origSave = saveState;
+function saveStateFixed() {
+  // Convert Set to Array before saving
+  if (state.currentGame && state.currentGame.removedInnings instanceof Set) {
+    state.currentGame.removedInnings = [...state.currentGame.removedInnings];
+  }
+  origSave();
+  // Convert back
+  if (state.currentGame && Array.isArray(state.currentGame.removedInnings)) {
+    state.currentGame.removedInnings = new Set(state.currentGame.removedInnings);
+  }
+}
+// Override
+saveState = saveStateFixed;
+
+// ============================================================
+// INIT
+// ============================================================
+updateHome();
+renderHistory();
+</script>
+</body>
+</html>
