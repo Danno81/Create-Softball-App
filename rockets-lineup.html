@@ -1226,6 +1226,12 @@ function assignPositions(available, battingOrder, benchCount, gameNum) {
         if (inning > 1 && gameBenchInnings[p].includes(inning - 1)) {
           score = Infinity; // Cannot bench
         }
+        // Players who will be FORCE-benched next inning (because they pitch the
+        // inning after that) CANNOT be benched this inning either — that would
+        // put them on the bench two innings in a row before pitching.
+        if (inning < INNINGS_MAX && mustBenchForPitching[inning + 1]?.includes(p)) {
+          score = Infinity;
+        }
         // Prefer to bench players who haven't been benched recently
         const lastBench = gameBenchInnings[p].length > 0 ?
           gameBenchInnings[p][gameBenchInnings[p].length - 1] : -99;
