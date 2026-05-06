@@ -707,6 +707,9 @@ body {
   <button class="big-btn outline" onclick="showScreen('screen-history')" id="history-btn" style="display:none;">
     Game History
   </button>
+  <button class="big-btn outline" onclick="showScreen('screen-stats');renderStats();" id="stats-btn" style="display:none;">
+    Player Stats
+  </button>
   <button class="big-btn outline" style="color:var(--red);border-color:var(--red);" onclick="confirmReset()">
     Reset All Data
   </button>
@@ -860,6 +863,24 @@ body {
   </div>
 </div>
 
+<!-- ===== SCREEN: Player Stats ===== -->
+<div id="screen-stats" class="screen">
+  <div class="navbar">
+    <button class="nav-btn" onclick="showScreen('screen-home')">Back</button>
+    <span class="nav-title">Player Stats</span>
+    <button class="nav-btn" style="min-width:auto;"></button>
+  </div>
+  <div class="alert alert-info" style="margin-top:12px;">
+    <span class="alert-icon">📊</span>
+    <span>Innings played across all completed games. Used to keep bench time even.</span>
+  </div>
+  <div class="section">
+    <div class="section-header">All Players</div>
+    <div class="card" id="stats-list"></div>
+  </div>
+  <div id="stats-summary" style="padding:0 16px 24px;color:var(--text2);font-size:13px;text-align:center;"></div>
+</div>
+
 <!-- ===== Action Sheet Overlay ===== -->
 <div class="overlay" id="overlay" onclick="closeOverlay(event)">
   <div class="action-sheet" id="action-sheet">
@@ -928,6 +949,7 @@ function updateHome() {
   document.getElementById('home-game-num').textContent = `Game #${state.gameNumber}`;
   const hasHistory = state.games.length > 0;
   document.getElementById('history-btn').style.display = hasHistory ? 'block' : 'none';
+  document.getElementById('stats-btn').style.display = hasHistory ? 'block' : 'none';
 
   if (state.currentGame) {
     document.getElementById('current-game-summary').style.display = 'block';
@@ -1014,8 +1036,8 @@ function goStep2() {
   // From step 1, go to step 1b first
   if (document.getElementById('screen-step1').classList.contains('active')) {
     const avail = ALL_PLAYERS.length - absentPlayers.size;
-    if (avail < 9) {
-      alert(`Need at least 9 players. Currently ${avail} available.`);
+    if (avail < 8) {
+      alert(`Need at least 8 players. Currently ${avail} available.`);
       return;
     }
     goStep1b();
@@ -1153,21 +1175,28 @@ function assignPositions(available, battingOrder, benchCount, gameNum) {
     catcherInnings[c].push(i);
   }
 
-  // Build pre-pitch bench requirement: pitcher for inning N (N>1) must bench in inning N-1
-  const mustBenchForPitching = {}; // inning -> [players who must bench because they pitch next inning]
+  // Build pre-pitch bench requirement: each pitcher only gets ONE pre-pitch rest
+  // per game, the inning before their FIRST pitching inning. Subsequent pitching
+  // innings do not trigger another forced bench (they've already had a rest).
+  const firstPitchInning = {}; // player -> first inning they pitch
+  for (let i = 1; i <= INNINGS_MAX; i++) {
+    const p = pcAssignments[i]?.pitcher;
+    if (p && available.includes(p) && !(p in firstPitchInning)) {
+      firstPitchInning[p] = i;
+    }
+  }
+  const mustBenchForPitching = {}; // inning -> [players who must bench because they pitch the next inning for the first time]
   for (let i = 1; i <= INNINGS_MAX; i++) {
     mustBenchForPitching[i] = [];
   }
-  for (let i = 2; i <= INNINGS_MAX; i++) {
-    const nextPitcher = pcAssignments[i]?.pitcher;
-    if (nextPitcher && available.includes(nextPitcher)) {
-      // The pitcher for inning i must be benched in inning i-1
-      // BUT only if they are not already pitching or catching in inning i-1
-      const prevPitcher = pcAssignments[i - 1]?.pitcher;
-      const prevCatcher = pcAssignments[i - 1]?.catcher;
-      if (nextPitcher !== prevPitcher && nextPitcher !== prevCatcher) {
-        mustBenchForPitching[i - 1].push(nextPitcher);
-      }
+  for (const [pitcher, firstInning] of Object.entries(firstPitchInning)) {
+    if (firstInning < 2) continue; // pitching inning 1 needs no prior rest
+    const prevInning = firstInning - 1;
+    // Skip if they're already pitching or catching in the prior inning
+    const prevPitcher = pcAssignments[prevInning]?.pitcher;
+    const prevCatcher = pcAssignments[prevInning]?.catcher;
+    if (pitcher !== prevPitcher && pitcher !== prevCatcher) {
+      mustBenchForPitching[prevInning].push(pitcher);
     }
   }
 
@@ -1180,15 +1209,27 @@ function assignPositions(available, battingOrder, benchCount, gameNum) {
   const gameBenchInnings = {}; // player -> [innings on bench]
   available.forEach(p => gameBenchInnings[p] = []);
 
-  // Get bench priority: who hasn't been benched recently should be benched less
-  function benchPriority(player) {
-    // Lower = should be benched first (has been longest since last bench)
-    const hist = state.benchHistory[player];
-    if (!hist) return 0; // Never benched = high priority to bench
-    // Parse "game-inning" to a sortable number
-    const parts = hist.split('-');
-    return parseInt(parts[0]) * 100 + parseInt(parts[1]);
-  }
+  // Pre-compute team-wide bench-equity stats. Goal: every player ends up
+  // with a roughly equal percentage of bench innings over the season, so we
+  // bench whoever is currently below the team average bench rate.
+  const teamBenchStats = {}; // player -> { bench, total, pct (or null if no data) }
+  let pctSum = 0, pctCount = 0;
+  available.forEach(p => {
+    const hist = state.positionHistory[p] || {};
+    let bench = 0, total = 0;
+    for (const [pos, count] of Object.entries(hist)) {
+      if (pos === '—') continue;
+      total += count;
+      if (pos === 'BN') bench += count;
+    }
+    teamBenchStats[p] = {
+      bench,
+      total,
+      pct: total > 0 ? bench / total : null
+    };
+    if (total > 0) { pctSum += teamBenchStats[p].pct; pctCount++; }
+  });
+  const teamAvgBenchPct = pctCount > 0 ? pctSum / pctCount : 0;
 
   for (let inning = 1; inning <= INNINGS_MAX; inning++) {
     const inningAssignment = {};
@@ -1232,15 +1273,20 @@ function assignPositions(available, battingOrder, benchCount, gameNum) {
         if (inning < INNINGS_MAX && mustBenchForPitching[inning + 1]?.includes(p)) {
           score = Infinity;
         }
-        // Prefer to bench players who haven't been benched recently
+        // Within-game gap: prefer players who haven't sat yet this game
         const lastBench = gameBenchInnings[p].length > 0 ?
           gameBenchInnings[p][gameBenchInnings[p].length - 1] : -99;
-        // More innings since last bench = more eligible
         score += (inning - lastBench);
-        // Factor in historical bench data
-        const histPriority = benchPriority(p);
-        if (histPriority === 0) score += 100; // Never benched historically
-        else score += (gameNum * 100 - histPriority);
+
+        // Season-long equity: strongly prefer players whose lifetime bench %
+        // is below the team average. New players (no history) are treated as
+        // average so they aren't aggressively benched on their first game.
+        const stats = teamBenchStats[p];
+        const myPct = stats.pct !== null ? stats.pct : teamAvgBenchPct;
+        score += (teamAvgBenchPct - myPct) * 1000;
+
+        // Tiny random tiebreaker so we don't always pick the same player when tied
+        score += Math.random() * 0.5;
 
         return { player: p, score };
       }).filter(c => c.score !== Infinity);
@@ -1281,6 +1327,8 @@ function assignPositions(available, battingOrder, benchCount, gameNum) {
 
     // Assign field positions — include P/C slots if not manually assigned
     let fieldSlots = [...INFIELD, ...OUTFIELD]; // 7 base positions
+    // 8-player mode: leave center field empty
+    if (numPlayers === 8) fieldSlots = fieldSlots.filter(s => s !== 'CF');
     if (!hasPitcher) fieldSlots.unshift('P');
     if (!hasCatcher) fieldSlots.splice(hasPitcher ? 0 : 1, 0, 'C');
 
@@ -1631,16 +1679,71 @@ function overridePosition(player, inning, newPos) {
   // Check if someone else has this position
   const currentHolder = Object.entries(g.positions[inning]).find(([p, pos]) => pos === newPos && p !== player);
 
+  const playerOldPos = g.positions[inning][player];
+  let swappedPlayer = null;
+  let swappedOldPos = null;
+
   if (currentHolder && newPos !== 'BN') {
     // Swap
-    const oldPos = g.positions[inning][player];
-    g.positions[inning][currentHolder[0]] = oldPos;
+    swappedPlayer = currentHolder[0];
+    swappedOldPos = g.positions[inning][swappedPlayer];
+    g.positions[inning][swappedPlayer] = playerOldPos;
   }
 
   g.positions[inning][player] = newPos;
+
+  // Double-check: this change must not create back-to-back outfield innings
+  // for the player(s) involved. If it does, revert and warn.
+  const affected = swappedPlayer ? [player, swappedPlayer] : [player];
+  const violation = findBackToBackOutfieldViolation(g, affected);
+  if (violation) {
+    g.positions[inning][player] = playerOldPos;
+    if (swappedPlayer) g.positions[inning][swappedPlayer] = swappedOldPos;
+    // Drop the snapshot we just took — nothing actually changed.
+    positionUndoStack.pop();
+    state.currentGame = g;
+    saveState();
+    renderPositionTable();
+    alert(
+      `Can't make this change — it would put ${violation.player} in the outfield ` +
+      `for back-to-back innings (${violation.inn1} and ${violation.inn2}).\n\n` +
+      `Try moving someone else into ${newPos} instead.`
+    );
+    return;
+  }
+
   state.currentGame = g;
   saveState();
   renderPositionTable();
+}
+
+// Scans the given players (or all available players) for back-to-back outfield
+// assignments across consecutive non-removed innings. Returns the first violation
+// found as { player, inn1, inn2 } or null if none.
+function findBackToBackOutfieldViolation(g, playersToCheck) {
+  if (!g) return null;
+  const innings = g.innings || INNINGS_MAX;
+  const removed = g.removedInnings instanceof Set
+    ? g.removedInnings
+    : new Set(g.removedInnings || []);
+  const list = (playersToCheck && playersToCheck.length)
+    ? playersToCheck
+    : (g.availablePlayers || []);
+  for (const player of list) {
+    let prevWasOf = false;
+    let prevInning = null;
+    for (let i = 1; i <= innings; i++) {
+      if (removed.has(i)) { prevWasOf = false; prevInning = null; continue; }
+      const pos = g.positions[i]?.[player];
+      const isOf = OUTFIELD.includes(pos);
+      if (isOf && prevWasOf) {
+        return { player, inn1: prevInning, inn2: i };
+      }
+      prevWasOf = isOf;
+      prevInning = i;
+    }
+  }
+  return null;
 }
 
 function toggleInning(inning) {
@@ -2394,6 +2497,64 @@ function closeSheet() {
 
 function closeOverlay(e) {
   if (e.target === document.getElementById('overlay')) closeSheet();
+}
+
+// ============================================================
+// PLAYER STATS (running tally across all completed games)
+// ============================================================
+function getPlayerStats(player) {
+  const hist = state.positionHistory[player] || {};
+  let bench = 0, field = 0;
+  for (const [pos, count] of Object.entries(hist)) {
+    if (pos === '—') continue; // absent / left game
+    if (pos === 'BN') bench += count;
+    else field += count;  // P, C, 1B, 2B, 3B, SS, LF, CF, RF
+  }
+  return { bench, field, total: bench + field };
+}
+
+function renderStats() {
+  const list = document.getElementById('stats-list');
+  const summary = document.getElementById('stats-summary');
+  const stats = ALL_PLAYERS.map(p => ({ name: p, ...getPlayerStats(p) }));
+  stats.sort((a, b) => a.name.localeCompare(b.name));
+
+  const anyData = stats.some(s => s.total > 0);
+  if (!anyData) {
+    list.innerHTML = `
+      <div style="padding:40px 16px;text-align:center;color:var(--text2);">
+        <div style="font-size:36px;margin-bottom:8px;">📊</div>
+        <p>No completed games yet. Stats will appear after your first game.</p>
+      </div>
+    `;
+    summary.innerHTML = '';
+    return;
+  }
+
+  // Compute team-average bench % (only for players who have played)
+  const played = stats.filter(s => s.total > 0);
+  const teamAvg = played.reduce((sum, s) => sum + (s.bench / s.total), 0) / played.length;
+
+  list.innerHTML = stats.map(s => {
+    const pct = s.total > 0 ? Math.round((s.bench / s.total) * 100) : 0;
+    const totalLine = s.total > 0
+      ? `<strong style="color:var(--text);">${s.field}</strong> field · <strong style="color:var(--text);">${s.bench}</strong> bench`
+      : `<span style="color:var(--text3);">no innings yet</span>`;
+    const pctLine = s.total > 0
+      ? `${pct}% bench rate`
+      : '';
+    return `
+      <div class="player-row" style="cursor:default;">
+        <span class="name" style="flex:1;">${s.name}</span>
+        <div style="text-align:right;font-size:13px;color:var(--text2);min-width:140px;">
+          <div>${totalLine}</div>
+          <div style="font-size:11px;margin-top:2px;">${pctLine}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  summary.innerHTML = `Team average: <strong>${Math.round(teamAvg * 100)}%</strong> bench rate`;
 }
 
 // ============================================================
