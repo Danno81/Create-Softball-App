@@ -903,7 +903,7 @@ const FIELD_POSITIONS = ['P','C','1B','2B','3B','SS','LF','CF','RF'];
 const OUTFIELD = ['LF','CF','RF'];
 const INFIELD = ['1B','2B','3B','SS'];
 
-const INNINGS_MAX = 5;
+const INNINGS_MAX = 4;
 
 let state = loadState();
 
@@ -1288,31 +1288,32 @@ function assignPositions(available, battingOrder, benchCount, gameNum) {
         // Tiny random tiebreaker so we don't always pick the same player when tied
         score += Math.random() * 0.5;
 
-        return { player: p, score };
+        return {
+          player: p,
+          score,
+          gameBenchSoFar: gameBenchInnings[p].length // how many innings already sat this game
+        };
       }).filter(c => c.score !== Infinity);
 
-      // Sort: highest score first (most overdue for bench)
+      // Sort: highest score first (most overdue for bench by season equity)
       benchCandidates.sort((a, b) => b.score - a.score);
 
-      // But also ensure we're not benching the same player too many times
-      // Limit: each player benched at most ceil(INNINGS_MAX * benchCount / numPlayers) times
-      const maxBenchPerPlayer = Math.ceil((INNINGS_MAX * benchCount) / (numPlayers - 2)); // exclude P/C pool roughly
-
-      for (const cand of benchCandidates) {
-        if (benchPlayers.length >= benchCount) break;
-        if (gameBenchInnings[cand.player].length < maxBenchPerPlayer) {
-          benchPlayers.push(cand.player);
-        }
-      }
-
-      // Fallback if we couldn't fill bench spots
-      if (benchPlayers.length < benchCount) {
+      // Tiered selection: within a single game, no player should sit more than
+      // one inning unless math makes it unavoidable. Fill from "0 prior sits"
+      // first; only dip into "1 prior sit" if we still need more, then "2", etc.
+      // Within each tier, candidates are already in score order (best first),
+      // so season-equity decides who absorbs the extra sit when math forces it.
+      // (Pitcher pre-pitch forced rests already count toward gameBenchSoFar via
+      // the gameBenchInnings update at the end of each inning.)
+      let tier = 0;
+      while (benchPlayers.length < benchCount && tier <= INNINGS_MAX) {
         for (const cand of benchCandidates) {
           if (benchPlayers.length >= benchCount) break;
-          if (!benchPlayers.includes(cand.player)) {
-            benchPlayers.push(cand.player);
-          }
+          if (cand.gameBenchSoFar !== tier) continue;
+          if (benchPlayers.includes(cand.player)) continue;
+          benchPlayers.push(cand.player);
         }
+        tier++;
       }
 
       benchPlayers.forEach(p => {
@@ -2176,7 +2177,7 @@ function adjustInnings() {
       Current: ${g.innings} innings. Tap to change.
     </p>
     <div class="card">
-      ${[3, 4, 5].map(n => `
+      ${[3, 4].map(n => `
         <div class="player-row" onclick="setInnings(${n})" style="${n === g.innings ? 'background:rgba(0,122,255,0.08);' : ''}">
           <span class="name">${n} innings ${n === g.innings ? '(current)' : ''}</span>
           ${n === g.innings ? '<span style="color:var(--blue);font-weight:600;">✓</span>' : ''}
